@@ -25,16 +25,45 @@ export async function createSessionToken(username: string): Promise<string> {
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest();
 const safeEqual = (a: string, b: string) => crypto.timingSafeEqual(sha(a), sha(b));
 
-export async function checkCredentials(username: string, password: string): Promise<boolean> {
+
+
+export async function checkCredentials(
+  username: string,
+  password: string
+): Promise<boolean> {
   const expectedUser = process.env.ADMIN_USERNAME || "";
-  const hash = process.env.ADMIN_PASSWORD_HASH;
   const plain = process.env.ADMIN_PASSWORD;
-  const userOk = expectedUser !== "" && safeEqual(username, expectedUser);
+  const hash = process.env.ADMIN_PASSWORD_HASH;
+
+  const userOk =
+    expectedUser !== "" && safeEqual(username, expectedUser);
+
   let passOk = false;
-  if (hash) passOk = await bcrypt.compare(password, hash);
-  else if (plain) passOk = safeEqual(password, plain);
+
+  // First priority: plain admin password
+  if (plain) {
+    passOk = safeEqual(password, plain);
+  }
+  // Second priority: bcrypt hashed password
+  else if (hash) {
+    passOk = await bcrypt.compare(password, hash);
+  }
+
   return userOk && passOk;
 }
+
+
+
+// export async function checkCredentials(username: string, password: string): Promise<boolean> {
+//   const expectedUser = process.env.ADMIN_USERNAME || "";
+//   const hash = process.env.ADMIN_PASSWORD_HASH;
+//   const plain = process.env.ADMIN_PASSWORD;
+//   const userOk = expectedUser !== "" && safeEqual(username, expectedUser);
+//   let passOk = false;
+//   if (hash) passOk = await bcrypt.compare(password, hash);
+//   else if (plain) passOk = safeEqual(password, plain);
+//   return userOk && passOk;
+// }
 
 export async function getAdmin(): Promise<string | null> {
   const store = await cookies();
