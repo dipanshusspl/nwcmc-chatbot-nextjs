@@ -9,3 +9,14 @@ export function formatDateTime(d: Date | string | null | undefined): string {
     hour: "2-digit", minute: "2-digit", hour12: false,
   }).format(date);
 }
+
+export function cleanUrlText(text: string): string {
+  return text
+    .replace(/https?\s*:\s*\/\s*\/\s*/gi, (match) => match.replace(/\s+/g, ""))
+    .replace(/(https?:\/\/[^\s<>"']+)\s+([/?#&=])\s*/gi, "$1$2")
+    .replace(/(https?:\/\/[^\s<>"']*)(?:\s+\.\s*|\.\s+)(?=[a-z\d])/g, "$1.");
+}
+
+export function formatChatbotResponse(text: string): string {
+  return cleanUrlText(text).trim();
+}
